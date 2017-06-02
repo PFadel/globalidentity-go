@@ -7,6 +7,7 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"fmt"
 )
 
 const (
@@ -17,7 +18,21 @@ const (
 	validateTokenUrl       = "https://dlpgi.dlp-payments.com/api/authorization/validatetokenresponse"
 	renewTokenUrl          = "https://dlpgi.dlp-payments.com/api/authorization/renewtoken"
 	recoverPasswordUrl     = "https://dlpgi.dlp-payments.com/api/authorization/recoverPassword"
+	associateRoleToUserUrl = "https://dlpgi.dlp-payments.com/api/management/%s/users/%s/roles"
 )
+
+func TestAssociateRoleToUserWrongStatusCode(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	url := fmt.Sprintf(associateRoleToUserUrl, "appkey", "email@email.com")
+
+	httpmock.RegisterResponder("POST", url, httpmock.NewStringResponder(http.StatusInternalServerError, ""))
+
+	gim := New("test", globalApplicationUrl)
+	_, err := gim.RecoverPassword("test@test.com.br")
+	assert.NotNil(t, err)
+}
 
 func TestRecoverPasswordWrongStatusCode(t *testing.T) {
 	httpmock.Activate()

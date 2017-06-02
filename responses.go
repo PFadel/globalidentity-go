@@ -48,3 +48,8 @@ type isUserInRoleResponse struct {
 	Success         bool     `json:"Success"`
 	OperationReport []string `json:"OperationReport"`
 }
+
+type associateRoleToUserResponse struct {
+	Success         bool     `json:"Success"`
+	OperationReport []string `json:"OperationReport"`
+}

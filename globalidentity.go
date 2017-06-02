@@ -33,6 +33,7 @@ type GlobalIdentityManager interface {
 	RenewToken(token string) (string, error)
 	ValidateApplication(clientApplicationKey string, rawData string, encryptedData string) (bool, error)
 	RecoverPassword(email string) (bool, error)
+	AssociateRoleToUser(applicationKey, userEmail string, roles []string) (bool, error)
 }
 
 type globalIdentityManager struct {
@@ -45,6 +46,39 @@ func New(applicationKey string, globalIdentityHost string) GlobalIdentityManager
 		applicationKey,
 		globalIdentityHost,
 	}
+}
+
+func (gim *globalIdentityManager)AssociateRoleToUser(applicationKey, userEmail string, roles []string) (bool, error){
+	request := associateRoleToUserRequest{
+		Roles:roles,
+	}
+
+	json, err := toJson(request)
+	if err != nil {
+		return false, err
+	}
+	url := fmt.Sprintf("/api/management/%s/users/%s/roles", applicationKey, userEmail)
+	resp, err := http.Post(gim.globalIdentityHost+url, contentJson, json)
+	if err != nil {
+		return false, err
+	}
+
+	if resp.StatusCode != 200 {
+		return false, GlobalIdentityError([]string{fmt.Sprintf("%v", resp.StatusCode)})
+	}
+
+	var response associateRoleToUserResponse
+
+	err = fromJson(&response, resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	if len(response.OperationReport) > 0 {
+		err = GlobalIdentityError(response.OperationReport)
+	}
+
+	return response.Success, err
 }
 
 func (gim *globalIdentityManager) AuthenticateUser(email string, password string, expirationInMinutes ...int) (*GlobalIdentityUser, error) {

@@ -34,3 +34,7 @@ type validateApplicationRequest struct {
 	RawData              string `json:"RawData"`
 	EncryptedData        string `json:"EncryptedData"`
 }
+
+type associateRoleToUserRequest struct {
+	Roles []string `json:"roles"`
+}
